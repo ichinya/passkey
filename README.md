@@ -52,6 +52,5 @@ PASSCRYPT_KEY="yourkey" bash <(wget -qO- https://raw.githubusercontent.com/ichin
 ### Установка в систему
 
 ```bash
-curl -o /usr/local/bin/passkey https://raw.githubusercontent.com/yourname/passkey/main/passkey.sh
-chmod +x /usr/local/bin/passkey
+curl -sSL https://raw.githubusercontent.com/ichinya/passkey/main/shell/install.sh | bash
 ```
