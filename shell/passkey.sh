@@ -1,14 +1,27 @@
 #!/bin/bash
-# Shell version of passkey
 
-# Зашифровать и получить строку
-passcrypt encrypt --password "my-secret" --key "superkey"
+# Проверка ключа
+if [[ -z "$PASSCRYPT_KEY" ]]; then
+  echo "Ошибка: переменная PASSCRYPT_KEY не задана"
+  exit 1
+fi
 
-# Расшифровать строку
-passcrypt decrypt --cipher "U2FsdGVkX1..." --key "superkey"
+MODE=$1
+DATA=$2
 
-# Сохранить в хранилище
-passcrypt save --name "gmail" --password "my-password" --key "masterkey"
+if [[ -z "$MODE" || -z "$DATA" ]]; then
+  echo "Использование:"
+  echo "  $0 e \"пароль для шифрования\""
+  echo "  $0 d \"зашифрованный base64\""
+  echo "  (ключ должен быть в переменной PASSCRYPT_KEY)"
+  exit 1
+fi
 
-# Получить из хранилища
-passcrypt get --name "gmail" --key "masterkey"
+if [[ "$MODE" == "e" ]]; then
+  echo -n "$DATA" | openssl enc -aes-256-cbc -a -salt -pbkdf2 -pass pass:"$PASSCRYPT_KEY"
+elif [[ "$MODE" == "d" ]]; then
+  echo "$DATA" | openssl enc -aes-256-cbc -a -d -salt -pbkdf2 -pass pass:"$PASSCRYPT_KEY"
+else
+  echo "Неизвестный режим: $MODE (используй e или d)"
+  exit 1
+fi

@@ -1,4 +1,6 @@
-# Documentation
+# Passcrypt
+
+## Утилита `passcrypt` на Go
 
 Использование утилиты `passcrypt` для шифрования и дешифрования паролей.
 
@@ -13,8 +15,22 @@ PASSCRYPT_KEY="ключ" ./passkey d "base64-cipher"
 go run main.go encrypt
 ```
 
-## Сборка
+### Сборка
 
 ```bash
 go build -o passkey go/main.go
+```
+
+## Использование через скрипт
+
+```bash
+export PASSCRYPT_KEY="superkey"
+
+# Шифрование
+./passkey.sh e "my-password"
+# => U2FsdGVkX1+...
+
+# Расшифровка
+./passkey.sh d "U2FsdGVkX1+..."
+# => my-password
 ```
