@@ -1,4 +1,7 @@
 build:
+	go build -o passkey ./go
+
+docker:
 	docker build -t passkey .
 
 encrypt:
