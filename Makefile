@@ -1,5 +1,8 @@
 build:
-	go build -o passkey go/main.go encrypt.go
+	docker build -t passkey .
 
-test:
-	go test
+encrypt:
+	docker run --rm -e PASSCRYPT_KEY=$(key) passkey e "$(text)"
+
+decrypt:
+	docker run --rm -e PASSCRYPT_KEY=$(key) passkey d "$(text)"
