@@ -42,3 +42,9 @@ export PASSCRYPT_KEY="superkey"
 ./passkey.sh d "U2FsdGVkX1+..."
 # => my-password
 ```
+
+### Запуск с curl/wget
+
+```shell
+PASSCRYPT_KEY="yourkey" bash <(wget -qO- https://raw.githubusercontent.com/ichinya/passkey/main/shell/passkey.sh) d "ciphertext"
+```
