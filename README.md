@@ -21,6 +21,14 @@ go run main.go encrypt
 go build -o passkey go/main.go
 ```
 
+Сделать исполняемый файл можно с помощью команды `go build`, которая создаст файл `passkey` в текущей директории.
+
+```shell
+chmod +x passkey.sh
+sudo mv passkey.sh /usr/local/bin/passkey
+
+```
+
 ## Использование через скрипт
 
 ```bash
