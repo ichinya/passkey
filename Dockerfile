@@ -1,9 +1,12 @@
 # Используем минимальный образ с Go
-FROM golang:1.21-alpine as builder
+FROM golang:1.24-alpine AS builder
 
 WORKDIR /app
 COPY . .
-RUN go build -o passkey go/main.go encrypt.go
+WORKDIR /app/go
+RUN ls -l /app/go
+RUN go mod download
+RUN go build -o ../passkey
 
 # Финальный образ: только бинарник
 FROM alpine:latest

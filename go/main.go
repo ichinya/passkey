@@ -15,7 +15,6 @@ func main() {
 	mode := os.Args[1]
 	os.Args = append([]string{os.Args[0]}, os.Args[2:]...)
 
-	encMode := flag.String("mode", "shell", "encryption mode: shell or safe")
 	length := flag.Int("length", 16, "password length")
 	level := flag.String("level", "medium", "password complexity level")
 	batch := flag.Int("batch", 1, "number of passwords to generate")
@@ -34,7 +33,7 @@ func main() {
 			fmt.Println("usage: passkey e <string>")
 			os.Exit(1)
 		}
-		result, err := Encrypt(flag.Arg(0), key, *encMode)
+		result, err := Encrypt(flag.Arg(0), key)
 		if err != nil {
 			fmt.Println("error:", err)
 			os.Exit(1)
@@ -50,7 +49,7 @@ func main() {
 			fmt.Println("usage: passkey d <cipher>")
 			os.Exit(1)
 		}
-		result, err := Decrypt(flag.Arg(0), key, *encMode)
+		result, err := Decrypt(flag.Arg(0), key)
 		if err != nil {
 			fmt.Println("error:", err)
 			os.Exit(1)
@@ -69,7 +68,7 @@ func main() {
 					fmt.Println("PASSCRYPT_KEY not set")
 					os.Exit(1)
 				}
-				pw, err = Encrypt(pw, key, *encMode)
+				pw, err = Encrypt(pw, key)
 				if err != nil {
 					fmt.Println("error:", err)
 					os.Exit(1)
