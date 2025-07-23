@@ -48,3 +48,10 @@ export PASSCRYPT_KEY="superkey"
 ```shell
 PASSCRYPT_KEY="yourkey" bash <(wget -qO- https://raw.githubusercontent.com/ichinya/passkey/main/shell/passkey.sh) d "ciphertext"
 ```
+
+### Установка в систему
+
+```bash
+curl -o /usr/local/bin/passkey https://raw.githubusercontent.com/yourname/passkey/main/passkey.sh
+chmod +x /usr/local/bin/passkey
+```
