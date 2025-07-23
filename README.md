@@ -3,12 +3,18 @@
 Использование утилиты `passcrypt` для шифрования и дешифрования паролей.
 
 ```bash
-# Используя переменные окружения
-PASSCRYPT_PASS="my-secret" PASSCRYPT_KEY="key123" go run main.go encrypt
+# Шифрование (e = encrypt)
+PASSCRYPT_KEY="ключ" ./passkey e "my-password"
 
-# Расшифровка
-PASSCRYPT_CIPHER="..." PASSCRYPT_KEY="key123" go run main.go decrypt
+# Расшифровка (d = decrypt)
+PASSCRYPT_KEY="ключ" ./passkey d "base64-cipher"
 
 # Без переменных
 go run main.go encrypt
+```
+
+## Сборка
+
+```bash
+go build -o passkey go/main.go
 ```

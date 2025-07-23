@@ -1,87 +1,109 @@
 package main
 
 import (
-	"bufio"
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
 	"encoding/base64"
 	"fmt"
 	"os"
-	"strings"
 
 	"golang.org/x/crypto/scrypt"
 )
-
-func getEnvOrPrompt(key string) string {
-	val := os.Getenv(key)
-	if val == "" {
-		fmt.Printf("%s: ", key)
-		reader := bufio.NewReader(os.Stdin)
-		input, _ := reader.ReadString('\n')
-		return strings.TrimSpace(input)
-	}
-	return val
-}
 
 func deriveKey(password string, salt []byte) []byte {
 	key, _ := scrypt.Key([]byte(password), salt, 32768, 8, 1, 32)
 	return key
 }
 
-func encrypt(plaintext, password string) string {
+func encrypt(plaintext, password string) (string, error) {
 	salt := make([]byte, 16)
-	rand.Read(salt)
+	_, err := rand.Read(salt)
+	if err != nil {
+		return "", err
+	}
 	key := deriveKey(password, salt)
 
-	block, _ := aes.NewCipher(key)
-	gcm, _ := cipher.NewGCM(block)
+	block, err := aes.NewCipher(key)
+	if err != nil {
+		return "", err
+	}
+	gcm, err := cipher.NewGCM(block)
+	if err != nil {
+		return "", err
+	}
 
 	nonce := make([]byte, gcm.NonceSize())
-	rand.Read(nonce)
+	_, err = rand.Read(nonce)
+	if err != nil {
+		return "", err
+	}
 
 	ciphertext := gcm.Seal(nil, nonce, []byte(plaintext), nil)
-
 	out := append(salt, nonce...)
 	out = append(out, ciphertext...)
 
-	return base64.StdEncoding.EncodeToString(out)
+	return base64.StdEncoding.EncodeToString(out), nil
 }
 
-func decrypt(encoded, password string) string {
-	data, _ := base64.StdEncoding.DecodeString(encoded)
+func decrypt(encoded, password string) (string, error) {
+	data, err := base64.StdEncoding.DecodeString(encoded)
+	if err != nil {
+		return "", err
+	}
 	salt := data[:16]
 	nonce := data[16:28]
 	ciphertext := data[28:]
 
 	key := deriveKey(password, salt)
-	block, _ := aes.NewCipher(key)
-	gcm, _ := cipher.NewGCM(block)
+	block, err := aes.NewCipher(key)
+	if err != nil {
+		return "", err
+	}
+	gcm, err := cipher.NewGCM(block)
+	if err != nil {
+		return "", err
+	}
 
-	plaintext, _ := gcm.Open(nil, nonce, ciphertext, nil)
-	return string(plaintext)
+	plaintext, err := gcm.Open(nil, nonce, ciphertext, nil)
+	if err != nil {
+		return "", err
+	}
+	return string(plaintext), nil
 }
 
 func main() {
-	args := os.Args
-	if len(args) < 2 {
-		fmt.Println("Usage: passcrypt encrypt|decrypt")
-		return
+	if len(os.Args) < 3 {
+		fmt.Println("Usage: passkey [e|d] <string>")
+		os.Exit(1)
 	}
 
-	command := args[1]
-	switch command {
-	case "encrypt":
-		pass := getEnvOrPrompt("PASSCRYPT_PASS")
-		key := getEnvOrPrompt("PASSCRYPT_KEY")
-		enc := encrypt(pass, key)
-		fmt.Println("Encrypted:", enc)
-	case "decrypt":
-		cipher := getEnvOrPrompt("PASSCRYPT_CIPHER")
-		key := getEnvOrPrompt("PASSCRYPT_KEY")
-		dec := decrypt(cipher, key)
-		fmt.Println("Decrypted:", dec)
+	mode := os.Args[1]
+	input := os.Args[2]
+	key := os.Getenv("PASSCRYPT_KEY")
+
+	if key == "" {
+		fmt.Println("Error: set PASSCRYPT_KEY environment variable.")
+		os.Exit(1)
+	}
+
+	switch mode {
+	case "e":
+		result, err := encrypt(input, key)
+		if err != nil {
+			fmt.Println("Encryption error:", err)
+			os.Exit(1)
+		}
+		fmt.Println(result)
+	case "d":
+		result, err := decrypt(input, key)
+		if err != nil {
+			fmt.Println("Decryption error:", err)
+			os.Exit(1)
+		}
+		fmt.Println(result)
 	default:
-		fmt.Println("Unknown command:", command)
+		fmt.Println("Unknown mode:", mode)
+		os.Exit(1)
 	}
 }
