@@ -2,13 +2,17 @@
 
 set -e
 
-echo "⬇️ Установка passkey..."
-
 TARGET="/usr/local/bin/passkey"
+URL="https://raw.githubusercontent.com/ichinya/passkey/main/shell/passkey.sh"
 
-curl -sSL https://raw.githubusercontent.com/ichinya/passkey/main/shell/passkey.sh -o "$TARGET"
+echo "🔐 Установка passkey..."
+
+# Загрузка скрипта
+curl -fsSL "$URL" -o "$TARGET"
+
+# Делаем исполняемым
 chmod +x "$TARGET"
 
-echo "✅ Установлено в $TARGET"
-echo "Пример использования:"
-echo 'PASSCRYPT_KEY="mykey" passkey e "password"'
+echo "✅ Установка завершена!"
+echo "Теперь можно использовать команду:"
+echo '  PASSCRYPT_KEY="mykey" passkey e "my-password"'

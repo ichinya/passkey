@@ -1,4 +1,7 @@
-# Passcrypt
+# 🔐 passkey — шифрование паролей локально
+
+CLI-утилита для безопасного хранения и расшифровки паролей.  
+Работает через `openssl`, не требует внешнего сервера, использует переменную окружения `PASSCRYPT_KEY`.
 
 ## Утилита `passcrypt` на Go
 
@@ -53,4 +56,20 @@ PASSCRYPT_KEY="yourkey" bash <(wget -qO- https://raw.githubusercontent.com/ichin
 
 ```bash
 curl -sSL https://raw.githubusercontent.com/ichinya/passkey/main/shell/install.sh | bash
+```
+
+✅ Примеры использования
+
+```bash
+export PASSCRYPT_KEY="mykey"
+# Шифрование пароля
+passkey e "my-secret-password"
+# Расшифровка пароля
+passkey d "U2FsdGVkX1+..."
+```
+
+Если не хочешь устанавливать — можно запускать так:
+
+```bash
+PASSCRYPT_KEY="mykey" bash <(curl -s https://raw.githubusercontent.com/ichinya/passkey/main/shell/passkey.sh) e "password"
 ```
