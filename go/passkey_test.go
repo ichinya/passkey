@@ -11,12 +11,12 @@ func TestEncryptDecrypt(t *testing.T) {
 	key := "my-secret-key"
 	plain := "superSecure!"
 
-	cipher, err := Encrypt(plain, key)
+	cipher, err := Encrypt(plain, key, "safe")
 	if err != nil {
 		t.Fatalf("encryption failed: %v", err)
 	}
 
-	result, err := Decrypt(cipher, key)
+	result, err := Decrypt(cipher, key, "safe")
 	if err != nil {
 		t.Fatalf("decryption failed: %v", err)
 	}
@@ -58,12 +58,12 @@ func TestIntegrationBetweenEncryptors(t *testing.T) {
 	plain := "P@ssw0rd2025!"
 
 	os.Setenv("PASSCRYPT_KEY", key)
-	cipher, err := Encrypt(plain, key)
+	cipher, err := Encrypt(plain, key, "safe")
 	if err != nil {
 		t.Fatalf("Encrypt error: %v", err)
 	}
 
-	dec, err := Decrypt(cipher, key)
+	dec, err := Decrypt(cipher, key, "safe")
 	if err != nil {
 		t.Fatalf("Decrypt error: %v", err)
 	}

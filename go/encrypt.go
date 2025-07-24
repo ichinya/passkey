@@ -4,60 +4,63 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
+	"crypto/sha256"
 	"encoding/base64"
 	"errors"
-	"golang.org/x/crypto/scrypt"
 	"io"
+	"strings"
 )
 
-func Encrypt(plaintext, key string) (string, error) {
-	salt := make([]byte, 16)
-	if _, err := rand.Read(salt); err != nil {
+func Encrypt(plaintext, key, mode string) (string, error) {
+	if mode != "shell" && mode != "safe" && mode != "" {
+		return "", errors.New("invalid encryption mode")
+	}
+	salt := make([]byte, 8)
+	if _, err := io.ReadFull(rand.Reader, salt); err != nil {
 		return "", err
 	}
-
-	derivedKey, err := scrypt.Key([]byte(key), salt, 1<<15, 8, 1, 32)
+	keyHash := sha256.Sum256([]byte(key + string(salt)))
+	block, err := aes.NewCipher(keyHash[:])
 	if err != nil {
 		return "", err
 	}
-
-	block, err := aes.NewCipher(derivedKey)
-	if err != nil {
-		return "", err
-	}
-
 	gcm, err := cipher.NewGCM(block)
 	if err != nil {
 		return "", err
 	}
-
 	nonce := make([]byte, gcm.NonceSize())
 	if _, err := io.ReadFull(rand.Reader, nonce); err != nil {
 		return "", err
 	}
-
 	ciphertext := gcm.Seal(nil, nonce, []byte(plaintext), nil)
-	result := append(salt, nonce...)
-	result = append(result, ciphertext...)
+	final := append(salt, append(nonce, ciphertext...)...)
 
-	return base64.StdEncoding.EncodeToString(result), nil
+	if mode == "shell" {
+		return encodeShellSafe(final), nil
+	}
+	return base64.StdEncoding.EncodeToString(final), nil
 }
 
-func Decrypt(encodedCiphertext, key string) (string, error) {
-	data, err := base64.StdEncoding.DecodeString(encodedCiphertext)
+func Decrypt(ciphertext, key, mode string) (string, error) {
+	if mode != "shell" && mode != "safe" && mode != "" {
+		return "", errors.New("invalid decryption mode")
+	}
+	var raw []byte
+	var err error
+	if mode == "shell" {
+		raw, err = decodeShellSafe(ciphertext)
+	} else {
+		raw, err = base64.StdEncoding.DecodeString(ciphertext)
+	}
 	if err != nil {
 		return "", err
 	}
-	if len(data) < 16 {
+	if len(raw) < 8 {
 		return "", errors.New("invalid ciphertext")
 	}
-	salt := data[:16]
-	derivedKey, err := scrypt.Key([]byte(key), salt, 1<<15, 8, 1, 32)
-	if err != nil {
-		return "", err
-	}
-
-	block, err := aes.NewCipher(derivedKey)
+	salt := raw[:8]
+	keyHash := sha256.Sum256([]byte(key + string(salt)))
+	block, err := aes.NewCipher(keyHash[:])
 	if err != nil {
 		return "", err
 	}
@@ -65,18 +68,34 @@ func Decrypt(encodedCiphertext, key string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-
-	nonceSize := gcm.NonceSize()
-	if len(data) < 16+nonceSize {
+	if len(raw) < 8+gcm.NonceSize() {
 		return "", errors.New("invalid ciphertext")
 	}
-	nonce := data[16 : 16+nonceSize]
-	ciphertext := data[16+nonceSize:]
-
-	plaintext, err := gcm.Open(nil, nonce, ciphertext, nil)
+	nonce := raw[8 : 8+gcm.NonceSize()]
+	ciphertextData := raw[8+gcm.NonceSize():]
+	plaintext, err := gcm.Open(nil, nonce, ciphertextData, nil)
 	if err != nil {
 		return "", err
 	}
-
 	return string(plaintext), nil
+}
+
+func encodeShellSafe(b []byte) string {
+	s := base64.StdEncoding.EncodeToString(b)
+	s = strings.ReplaceAll(s, "+", "-")
+	s = strings.ReplaceAll(s, "/", "_")
+	s = strings.ReplaceAll(s, "=", "")
+	return s
+}
+
+func decodeShellSafe(s string) ([]byte, error) {
+	s = strings.ReplaceAll(s, "-", "+")
+	s = strings.ReplaceAll(s, "_", "/")
+	switch len(s) % 4 {
+	case 2:
+		s += "=="
+	case 3:
+		s += "="
+	}
+	return base64.StdEncoding.DecodeString(s)
 }
