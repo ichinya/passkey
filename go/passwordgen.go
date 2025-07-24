@@ -19,13 +19,15 @@ func GeneratePassword(length int, level string) (string, error) {
 		return "", errors.New("invalid complexity level")
 	}
 
-	password := make([]byte, length)
+	// Преобразуем в срез рун
+	runes := []rune(charset)
+	password := make([]rune, length)
 	for i := range password {
-		num, err := rand.Int(rand.Reader, big.NewInt(int64(len(charset))))
+		num, err := rand.Int(rand.Reader, big.NewInt(int64(len(runes))))
 		if err != nil {
 			return "", err
 		}
-		password[i] = charset[num.Int64()]
+		password[i] = runes[num.Int64()]
 	}
 
 	return string(password), nil

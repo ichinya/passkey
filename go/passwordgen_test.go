@@ -3,6 +3,12 @@ package main
 import "testing"
 
 func TestGeneratePassword(t *testing.T) {
+	const (
+		LevelLow      = "low"
+		LevelMedium   = "medium"
+		LevelStrong   = "strong"
+		LevelParanoid = "paranoid"
+	)
 	levels := []string{LevelLow, LevelMedium, LevelStrong, LevelParanoid}
 	for _, lvl := range levels {
 		seen := make(map[string]bool)
