@@ -6,9 +6,31 @@ import (
 	"os"
 )
 
+func printHelp() {
+	fmt.Println("Usage:")
+	fmt.Println("  passkey e <string>             Encrypt a string")
+	fmt.Println("  passkey d <cipher>             Decrypt a string")
+	fmt.Println("  passkey g [flags]              Generate password(s)")
+	fmt.Println()
+	fmt.Println("Flags for 'g':")
+	fmt.Println("  -length int                    Length of password (default 16)")
+	fmt.Println("  -level string                  Complexity level: low, medium, strong, paranoid")
+	fmt.Println("  -batch int                     Number of passwords to generate")
+	fmt.Println("  -encrypt                       Encrypt generated passwords")
+	fmt.Println()
+	fmt.Println("Environment:")
+	fmt.Println("  PASSCRYPT_KEY must be set for encryption/decryption")
+	fmt.Println()
+	fmt.Println("Examples:")
+	fmt.Println("  PASSCRYPT_KEY=abc123 passkey e \"mypassword\"")
+	fmt.Println("  PASSCRYPT_KEY=abc123 passkey d \"U2FsdGVk...\"")
+	fmt.Println("  passkey g -length 20 -level strong -batch 5")
+	fmt.Println("  PASSCRYPT_KEY=abc123 passkey g -length 24 -level paranoid -batch 10 -encrypt")
+}
+
 func main() {
 	if len(os.Args) < 2 {
-		fmt.Println("usage: passkey <e|d|g> [args]")
+		printHelp()
 		os.Exit(1)
 	}
 
@@ -78,7 +100,7 @@ func main() {
 		}
 
 	default:
-		fmt.Println("unknown mode")
+		printHelp()
 		os.Exit(1)
 	}
 }
