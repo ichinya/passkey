@@ -1,6 +1,8 @@
 package main
 
 import (
+	"os/exec"
+	"strings"
 	"testing"
 )
 
@@ -83,5 +85,107 @@ func TestRoundTripCrossSystem(t *testing.T) {
 	decrypted, err := Decrypt(encryptedShell, key, "shell")
 	if err != nil || decrypted != text {
 		t.Errorf("Shell mode roundtrip failed. Got: %s, Expected: %s", decrypted, text)
+	}
+}
+
+func TestShellModeOpenSSLPass(t *testing.T) {
+	key := "testkey"
+	text := "openssl compat"
+
+	enc, err := Encrypt(text, key, "shell")
+	if err != nil {
+		t.Fatal(err)
+	}
+	cmd := exec.Command("openssl", "enc", "-aes-256-cbc", "-a", "-d", "-pbkdf2", "-pass", "pass:"+key)
+	cmd.Stdin = strings.NewReader(enc + "\n")
+	out, err := cmd.Output()
+	if err != nil {
+		t.Fatalf("openssl decrypt failed: %v", err)
+	}
+	if strings.TrimSpace(string(out)) != text {
+		t.Fatalf("openssl expected %s got %s", text, strings.TrimSpace(string(out)))
+	}
+
+	cmd = exec.Command("openssl", "enc", "-aes-256-cbc", "-a", "-salt", "-pbkdf2", "-pass", "pass:"+key)
+	cmd.Stdin = strings.NewReader(text)
+	out, err = cmd.Output()
+	if err != nil {
+		t.Fatal(err)
+	}
+	cipherOpen := strings.TrimSpace(string(out))
+	dec, err := Decrypt(cipherOpen, key, "shell")
+	if err != nil {
+		t.Fatalf("Go decrypt failed: %v", err)
+	}
+	if dec != text {
+		t.Fatalf("expected %s got %s", text, dec)
+	}
+}
+
+func TestShellModeOpenSSL(t *testing.T) {
+	key := "testkey"
+	text := "openssl compat"
+
+	enc, err := Encrypt(text, key, "shell")
+	if err != nil {
+		t.Fatal(err)
+	}
+	cmd := exec.Command("openssl", "enc", "-aes-256-cbc", "-a", "-d", "-pbkdf2", "-pass", "pass:"+key)
+	cmd.Stdin = strings.NewReader(enc + "\n")
+	out, err := cmd.Output()
+	if err != nil {
+		t.Fatalf("openssl decrypt failed: %v", err)
+	}
+	if strings.TrimSpace(string(out)) != text {
+		t.Fatalf("openssl expected %s got %s", text, strings.TrimSpace(string(out)))
+	}
+
+	cmd = exec.Command("openssl", "enc", "-aes-256-cbc", "-a", "-salt", "-pbkdf2", "-pass", "pass:"+key)
+	cmd.Stdin = strings.NewReader(text)
+	out, err = cmd.Output()
+	if err != nil {
+		t.Fatal(err)
+	}
+	cipherOpen := strings.TrimSpace(string(out))
+	dec, err := Decrypt(cipherOpen, key, "shell")
+	if err != nil {
+		t.Fatalf("Go decrypt failed: %v", err)
+	}
+	if dec != text {
+		t.Fatalf("expected %s got %s", text, dec)
+	}
+}
+
+func TestShellModeOpenSSLPassword(t *testing.T) {
+	key := "testkey"
+	text := "openssl compat"
+
+	enc, err := Encrypt(text, key, "shell")
+	if err != nil {
+		t.Fatal(err)
+	}
+	cmd := exec.Command("openssl", "enc", "-aes-256-cbc", "-a", "-d", "-pbkdf2", "-pass", "pass:"+key)
+	cmd.Stdin = strings.NewReader(enc + "\n")
+	out, err := cmd.Output()
+	if err != nil {
+		t.Fatalf("openssl decrypt failed: %v", err)
+	}
+	if strings.TrimSpace(string(out)) != text {
+		t.Fatalf("openssl expected %s got %s", text, strings.TrimSpace(string(out)))
+	}
+
+	cmd = exec.Command("openssl", "enc", "-aes-256-cbc", "-a", "-salt", "-pbkdf2", "-pass", "pass:"+key)
+	cmd.Stdin = strings.NewReader(text)
+	out, err = cmd.Output()
+	if err != nil {
+		t.Fatal(err)
+	}
+	cipherOpen := strings.TrimSpace(string(out))
+	dec, err := Decrypt(cipherOpen, key, "shell")
+	if err != nil {
+		t.Fatalf("Go decrypt failed: %v", err)
+	}
+	if dec != text {
+		t.Fatalf("expected %s got %s", text, dec)
 	}
 }
