@@ -1,4 +1,4 @@
-name: Passkey Full Test
+name: Passkey Full Tests
 
 on:
   push:

@@ -1,5 +1,5 @@
 build:
-	go build -o passkey ./go
+	cd go && go build -o ../passkey
 
 docker:
 	docker build -t passkey .
