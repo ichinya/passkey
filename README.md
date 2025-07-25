@@ -29,7 +29,7 @@ export PASSCRYPT_KEY=mykey
 Через Docker:
 
 ```bash
-docker run --rm -e PASSCRYPT_KEY=mykey ghcr.io/ichinya/passkey e "secret"
+docker run --rm -e PASSCRYPT_KEY=mykey passkey e "secret"
 ```
 
 Через bash без установки:
@@ -51,6 +51,18 @@ PASSCRYPT_KEY=mykey ./passkey d "cipher"
 
 # Генерация 10 паролей и их шифрование
 PASSCRYPT_KEY=mykey ./passkey g -b 10 -e
+```
+
+## Примеры через Docker
+
+```bash
+# Шифрование
+docker run --rm -e PASSCRYPT_KEY=mykey ichinya/passkey e "mypassword
+PASSCRYPT_KEY=sd make encrypt ARGS="ваш текст"
+# Расшифровка
+docker run --rm -e PASSCRYPT_KEY=mykey ichinya/passkey d "cipher"
+# Генерация 10 паролей и их шифрование
+docker run --rm -e PASSCRYPT_KEY=mykey passkey g  -batch 10
 ```
 
 ## Лицензия

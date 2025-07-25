@@ -14,7 +14,6 @@ FROM alpine:latest
 WORKDIR /app
 COPY --from=builder /app/passkey /usr/local/bin/passkey
 
-# Установка переменной по умолчанию
-ENV PASSCRYPT_KEY=""
+RUN mkdir -p /run/secrets
 
 ENTRYPOINT ["/usr/local/bin/passkey"]
