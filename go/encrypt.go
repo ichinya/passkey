@@ -19,31 +19,30 @@ func Encrypt(plaintext, key, mode string) (string, error) {
 	case "shell":
 		return encryptShell(plaintext, key)
 	case "safe", "":
+		// PBKDF2 вместо SHA256
+		salt := make([]byte, 8)
+		if _, err := io.ReadFull(rand.Reader, salt); err != nil {
+			return "", err
+		}
+		dk := pbkdf2.Key([]byte(key), salt, 100000, 32, sha256.New)
+		block, err := aes.NewCipher(dk)
+		if err != nil {
+			return "", err
+		}
+		gcm, err := cipher.NewGCM(block)
+		if err != nil {
+			return "", err
+		}
+		nonce := make([]byte, gcm.NonceSize())
+		if _, err := io.ReadFull(rand.Reader, nonce); err != nil {
+			return "", err
+		}
+		ciphertext := gcm.Seal(nil, nonce, []byte(plaintext), nil)
+		final := append(salt, append(nonce, ciphertext...)...)
+		return encodeShellSafe(final), nil
 	default:
 		return "", errors.New("invalid encryption mode")
 	}
-
-	salt := make([]byte, 8)
-	if _, err := io.ReadFull(rand.Reader, salt); err != nil {
-		return "", err
-	}
-	keyHash := sha256.Sum256([]byte(key + string(salt)))
-	block, err := aes.NewCipher(keyHash[:])
-	if err != nil {
-		return "", err
-	}
-	gcm, err := cipher.NewGCM(block)
-	if err != nil {
-		return "", err
-	}
-	nonce := make([]byte, gcm.NonceSize())
-	if _, err := io.ReadFull(rand.Reader, nonce); err != nil {
-		return "", err
-	}
-	ciphertext := gcm.Seal(nil, nonce, []byte(plaintext), nil)
-	final := append(salt, append(nonce, ciphertext...)...)
-
-	return encodeShellSafe(final), nil
 }
 
 func Decrypt(ciphertext, key, mode string) (string, error) {
@@ -51,39 +50,39 @@ func Decrypt(ciphertext, key, mode string) (string, error) {
 	case "shell":
 		return decryptShell(ciphertext, key)
 	case "safe", "":
+		// PBKDF2 вместо SHA256
+		var raw []byte
+		var err error
+		raw, err = decodeShellSafe(ciphertext)
+		if err != nil {
+			return "", err
+		}
+		if len(raw) < 8 {
+			return "", errors.New("invalid ciphertext")
+		}
+		salt := raw[:8]
+		dk := pbkdf2.Key([]byte(key), salt, 100000, 32, sha256.New)
+		block, err := aes.NewCipher(dk)
+		if err != nil {
+			return "", err
+		}
+		gcm, err := cipher.NewGCM(block)
+		if err != nil {
+			return "", err
+		}
+		if len(raw) < 8+gcm.NonceSize() {
+			return "", errors.New("invalid ciphertext")
+		}
+		nonce := raw[8 : 8+gcm.NonceSize()]
+		ciphertextData := raw[8+gcm.NonceSize():]
+		plaintext, err := gcm.Open(nil, nonce, ciphertextData, nil)
+		if err != nil {
+			return "", err
+		}
+		return string(plaintext), nil
 	default:
 		return "", errors.New("invalid decryption mode")
 	}
-
-	var raw []byte
-	var err error
-	raw, err = decodeShellSafe(ciphertext)
-	if err != nil {
-		return "", err
-	}
-	if len(raw) < 8 {
-		return "", errors.New("invalid ciphertext")
-	}
-	salt := raw[:8]
-	keyHash := sha256.Sum256([]byte(key + string(salt)))
-	block, err := aes.NewCipher(keyHash[:])
-	if err != nil {
-		return "", err
-	}
-	gcm, err := cipher.NewGCM(block)
-	if err != nil {
-		return "", err
-	}
-	if len(raw) < 8+gcm.NonceSize() {
-		return "", errors.New("invalid ciphertext")
-	}
-	nonce := raw[8 : 8+gcm.NonceSize()]
-	ciphertextData := raw[8+gcm.NonceSize():]
-	plaintext, err := gcm.Open(nil, nonce, ciphertextData, nil)
-	if err != nil {
-		return "", err
-	}
-	return string(plaintext), nil
 }
 
 func encodeShellSafe(b []byte) string {

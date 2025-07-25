@@ -28,6 +28,7 @@ case "$MODE" in
       exit 1
     fi
     echo "$1" | openssl enc -aes-256-cbc -a -d -salt -pbkdf2 -pass pass:"$PASSCRYPT_KEY"
+    echo  # добавляем новую строку для удобства
     ;;
   g)
     LENGTH=16
@@ -62,6 +63,7 @@ case "$MODE" in
         PASS=$(echo -n "$PASS" | openssl enc -aes-256-cbc -a -salt -pbkdf2 -pass pass:"$PASSCRYPT_KEY")
       fi
       echo "$PASS"
+      echo  # добавляем новую строку для удобства
     done
     ;;
   *)
