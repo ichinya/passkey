@@ -5,10 +5,10 @@ export PASSCRYPT_KEY="test123"
 TEST_PASS="supersecret"
 
 # Зашифруем
-ENC=$(./passkey.sh e "$TEST_PASS")
+ENC=$(bash shell/passkey.sh e "$TEST_PASS")
 
 # Расшифруем
-DEC=$(./passkey.sh d "$ENC")
+DEC=$(bash shell/passkey.sh d "$ENC")
 
 if [[ "$DEC" == "$TEST_PASS" ]]; then
   echo "✅ Тест пройден: $DEC"
