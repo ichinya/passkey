@@ -1,5 +1,7 @@
 # 🔐 passkey
 
+[![Build Go](https://github.com/Ichinya/passkey/actions/workflows/go.yml/badge.svg)](https://github.com/Ichinya/passkey/actions/workflows/go.yml) [![Full Tests](https://github.com/Ichinya/passkey/actions/workflows/test.yml/badge.svg)](https://github.com/Ichinya/passkey/actions/workflows/test.yml) [![Docker Image](https://github.com/Ichinya/passkey/actions/workflows/docker.yml/badge.svg)](https://github.com/Ichinya/passkey/actions/workflows/docker.yml)
+
 `passkey` — минималистичная утилита для шифрования, расшифровки и генерации паролей. Бинарник написан на Go, есть версия
 на bash и Docker-образ. Все операции выполняются локально через ключ из переменной `PASSCRYPT_KEY`.
 
