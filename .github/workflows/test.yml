@@ -29,6 +29,9 @@ jobs:
       - name: Run shell script tests
         run: bash shell/test_passkey.sh
 
+      - name: Grant execute permissions to shell scripts
+        run: chmod +x shell/passkey.sh
+
       - name: Build Docker image
         run: docker build -t passkey .
 
