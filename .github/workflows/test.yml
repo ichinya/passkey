@@ -37,15 +37,15 @@ jobs:
 
       - name: Test Go <-> Shell compatibility
         run: |
-          ./go/passkey e "BridgeTest123" > cipher.txt
-          shell_output=$(PASSKEY_PASS="BridgeTest123" ./shell/passkey.sh d "$(cat cipher.txt)")
+          PASSCRYPT_KEY="MyC001P@s$w0rd" ./go/passkey e -mode shell "BridgeTest123" > cipher.txt
+          shell_output=$(PASSCRYPT_KEY="MyC001P@s$w0rd" ./shell/passkey.sh d "$(cat cipher.txt)")
           if [ "$shell_output" != "BridgeTest123" ]; then
             echo "Shell failed to decrypt Go output"
             exit 1
           fi
 
-          PASSKEY_PASS="BridgeTest123" ./shell/passkey.sh e "BridgeTest123" > cipher2.txt
-          go_output=$(./go/passkey d "$(cat cipher2.txt)")
+          PASSCRYPT_KEY="MyC001P@s$w0rd" ./shell/passkey.sh e "BridgeTest123" > cipher2.txt
+          go_output=$(PASSCRYPT_KEY="MyC001P@s$w0rd" ./go/passkey d "$(cat cipher2.txt)")
           if [ "$go_output" != "BridgeTest123" ]; then
             echo "Go failed to decrypt Shell output"
             exit 1
@@ -53,8 +53,8 @@ jobs:
 
       - name: Docker <-> Shell compatibility
         run: |
-          docker run --rm -e PASSKEY_PASS="BridgeTest123" passkey e "BridgeTest123" > cipher3.txt
-          shell_dec=$(PASSKEY_PASS="BridgeTest123" ./shell/passkey.sh d "$(cat cipher3.txt)")
+          docker run --rm -e PASSCRYPT_KEY="My Key" passkey e "BridgeTest123" > cipher3.txt
+          shell_dec=$(PASSCRYPT_KEY="My Key" ./shell/passkey.sh d "$(cat cipher3.txt)")
           if [ "$shell_dec" != "BridgeTest123" ]; then
             echo "Shell failed to decrypt Docker output"
             exit 1
